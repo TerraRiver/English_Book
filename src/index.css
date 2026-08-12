@@ -57,9 +57,9 @@
   --border: #e4dfd3;
   --input: #e4dfd3;
   --ring: #bf6a4d;
-  --chart-1: #bf6a4d;
-  --chart-2: #6b8f71;
-  --chart-3: #d4a24c;
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
   --chart-4: #7a8ca3;
   --chart-5: #a6647c;
 }
@@ -84,9 +84,9 @@
   --border: rgb(255 255 255 / 8%);
   --input: rgb(255 255 255 / 12%);
   --ring: #e08b6b;
-  --chart-1: #e08b6b;
-  --chart-2: #8fb896;
-  --chart-3: #e5bd73;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
   --chart-4: #9db0c7;
   --chart-5: #c288a0;
 }

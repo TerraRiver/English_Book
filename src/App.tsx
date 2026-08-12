@@ -1,5 +1,7 @@
 import { AddWordView } from "@/components/AddWordView"
 import { ReviewView } from "@/components/ReviewView"
+import { WordLibraryView } from "@/components/WordLibraryView"
+import { StatsView } from "@/components/StatsView"
 import { SettingsDialog } from "@/components/SettingsDialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -18,12 +20,20 @@ function App() {
         <TabsList className="w-full">
           <TabsTrigger value="add">添加</TabsTrigger>
           <TabsTrigger value="review">复习</TabsTrigger>
+          <TabsTrigger value="library">词库</TabsTrigger>
+          <TabsTrigger value="stats">统计</TabsTrigger>
         </TabsList>
         <TabsContent value="add" className="mt-6">
           <AddWordView />
         </TabsContent>
         <TabsContent value="review" className="mt-6">
           <ReviewView />
+        </TabsContent>
+        <TabsContent value="library" className="mt-6">
+          <WordLibraryView />
+        </TabsContent>
+        <TabsContent value="stats" className="mt-6">
+          <StatsView />
         </TabsContent>
       </Tabs>
     </main>

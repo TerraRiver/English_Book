@@ -79,7 +79,7 @@ export function SettingsDialog() {
               id="model"
               value={settings.model}
               onChange={(e) => setSettings({ ...settings, model: e.target.value })}
-              placeholder="deepseek-chat"
+              placeholder="deepseek-v4-flash"
             />
           </div>
         </div>

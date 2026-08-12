@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { getDueCards, reviewCard } from "@/lib/words"
-import { DIRECTION_LABEL, Rating, type FsrsRating } from "@/lib/fsrs"
+import { DIRECTION_LABEL, Rating, STATE_LABEL, type FsrsRating } from "@/lib/fsrs"
 import type { DueCard, WordDetail } from "@/lib/types"
 
 export function ReviewView() {
@@ -47,6 +47,7 @@ export function ReviewView() {
   const { card, word } = queue[0]
   const detail: WordDetail = JSON.parse(word.detail_json)
   const isReverse = card.direction === "zh_to_en"
+  const contextExample = detail.examples[0]
 
   const promptSenses = (
     <div className="flex flex-col gap-1.5">
@@ -64,26 +65,38 @@ export function ReviewView() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">剩余 {queue.length} 张</p>
+        <p className="text-sm text-muted-foreground">
+          剩余 {queue.length} 张 · {STATE_LABEL[card.state]}
+          {card.reps > 0 && ` · 已复习 ${card.reps} 次`}
+        </p>
         <Badge variant="outline">{DIRECTION_LABEL[card.direction]}</Badge>
       </div>
 
       <Card className="min-h-72 justify-center">
         <CardHeader className={revealed ? undefined : "items-center text-center"}>
-          {isReverse ? (
-            revealed ? (
-              <>
-                <CardTitle className="font-serif text-3xl font-normal">{word.term}</CardTitle>
-                {word.phonetic && <p className="text-sm text-muted-foreground">{word.phonetic}</p>}
-              </>
-            ) : (
-              promptSenses
-            )
+          {isReverse && !revealed ? (
+            promptSenses
           ) : (
             <>
               <CardTitle className="font-serif text-3xl font-normal">{word.term}</CardTitle>
               {word.phonetic && <p className="text-sm text-muted-foreground">{word.phonetic}</p>}
             </>
+          )}
+
+          {!revealed && contextExample && (
+            <p className="mt-2 border-l-2 border-border pl-3 text-left text-sm text-muted-foreground italic">
+              {isReverse ? contextExample.zh : contextExample.en}
+            </p>
+          )}
+
+          {!revealed && !isReverse && detail.variants.length > 0 && (
+            <div className="mt-1 flex flex-wrap justify-center gap-1.5">
+              {detail.variants.map((v, i) => (
+                <Badge key={i} variant="outline" className="font-normal">
+                  {v.label}: {v.form}
+                </Badge>
+              ))}
+            </div>
           )}
         </CardHeader>
 

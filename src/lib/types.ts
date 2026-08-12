@@ -56,3 +56,12 @@ export interface DueCard {
   card: CardRow
   word: WordRow
 }
+
+export interface WordWithCards extends WordRow {
+  cards: Pick<CardRow, "direction" | "due" | "state">[]
+}
+
+export interface CardWithWord {
+  card: CardRow
+  term: string
+}

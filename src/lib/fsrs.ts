@@ -3,7 +3,7 @@ import type { CardDirection, CardRow } from "./types"
 
 const scheduler = fsrs({ request_retention: 0.9 })
 
-export { Rating }
+export { Rating, State }
 export type FsrsRating = Rating.Again | Rating.Hard | Rating.Good | Rating.Easy
 
 function toFsrsCard(row: CardRow): Card {
@@ -72,4 +72,19 @@ export function scheduleReview(
 export const DIRECTION_LABEL: Record<CardDirection, string> = {
   en_to_zh: "英 → 中",
   zh_to_en: "中 → 英",
+}
+
+export const STATE_LABEL: Record<number, string> = {
+  [State.New]: "新卡片",
+  [State.Learning]: "学习中",
+  [State.Review]: "复习中",
+  [State.Relearning]: "重新学习",
+}
+
+// Categorical chart color per non-New state — validated for scatter's
+// all-pairs CVD check (see index.css --chart-1/2/3).
+export const STATE_CHART_VAR: Record<number, string> = {
+  [State.Learning]: "var(--chart-1)",
+  [State.Relearning]: "var(--chart-2)",
+  [State.Review]: "var(--chart-3)",
 }
