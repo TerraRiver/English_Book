@@ -1,0 +1,37 @@
+[
+  {
+    "id": "junior",
+    "label": "初中",
+    "count": 1991
+  },
+  {
+    "id": "senior",
+    "label": "高中",
+    "count": 3753
+  },
+  {
+    "id": "cet4",
+    "label": "四级",
+    "count": 4543
+  },
+  {
+    "id": "cet6",
+    "label": "六级",
+    "count": 3992
+  },
+  {
+    "id": "kaoyan",
+    "label": "考研",
+    "count": 5057
+  },
+  {
+    "id": "toefl",
+    "label": "托福",
+    "count": 10377
+  },
+  {
+    "id": "sat",
+    "label": "SAT",
+    "count": 4464
+  }
+]

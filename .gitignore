@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# raw wordlist source files (only the derived src/data/wordlists/*.json is used by the app)
+/词库
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

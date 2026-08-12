@@ -2,7 +2,7 @@ import { getDb } from "./db"
 import { initialCardFields, scheduleReview, type FsrsRating } from "./fsrs"
 import type { CardDirection, CardRow, CardWithWord, DueCard, WordDetail, WordRow, WordWithCards } from "./types"
 
-async function syncCards(wordId: number, bidirectional: boolean) {
+export async function syncCards(wordId: number, bidirectional: boolean) {
   const db = await getDb()
   const directions: CardDirection[] = bidirectional ? ["en_to_zh", "zh_to_en"] : ["en_to_zh"]
   for (const direction of directions) {
@@ -209,6 +209,27 @@ export async function reviewCard(card: CardRow, rating: FsrsRating): Promise<voi
       card.id,
     ]
   )
+}
+
+export async function getAllTerms(): Promise<string[]> {
+  const db = await getDb()
+  const rows = await db.select<{ term: string }[]>("SELECT term FROM words")
+  return rows.map((r) => r.term)
+}
+
+export async function insertWordIfNew(term: string, detail: WordDetail): Promise<boolean> {
+  const db = await getDb()
+  const phonetic = detail.phonetic_us ?? detail.phonetic_uk ?? null
+  const result = await db.execute(
+    `INSERT INTO words (term, phonetic, detail_json, note, bidirectional)
+     VALUES ($1, $2, $3, NULL, 0)
+     ON CONFLICT(term) DO NOTHING`,
+    [term, phonetic, JSON.stringify(detail)]
+  )
+  if (result.rowsAffected === 0) return false
+  const rows = await db.select<{ id: number }[]>("SELECT id FROM words WHERE term = $1", [term])
+  await syncCards(rows[0].id, false)
+  return true
 }
 
 export async function deleteWords(ids: number[]): Promise<void> {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { PencilIcon, TrashIcon } from "lucide-react"
+import { DownloadIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { WordDetailFields } from "@/components/WordDetailFields"
+import { ImportWordlistDialog } from "@/components/ImportWordlistDialog"
 import { DIRECTION_LABEL, STATE_LABEL } from "@/lib/fsrs"
 import { deleteWords, listWordsWithCards, updateWord } from "@/lib/words"
 import type { WordDetail, WordWithCards } from "@/lib/types"
@@ -22,6 +23,7 @@ export function WordLibraryView() {
   const [words, setWords] = useState<WordWithCards[] | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [editing, setEditing] = useState<WordWithCards | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   const reload = useCallback((q: string) => {
     listWordsWithCards(q).then(setWords)
@@ -59,12 +61,18 @@ export function WordLibraryView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        className="h-11 text-base"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="搜索单词或释义..."
-      />
+      <div className="flex items-center gap-2">
+        <Input
+          className="h-11 flex-1 text-base"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="搜索单词或释义..."
+        />
+        <Button variant="outline" className="h-11" onClick={() => setImportOpen(true)}>
+          <DownloadIcon />
+          导入词库
+        </Button>
+      </div>
 
       <div className="flex h-8 items-center justify-between">
         {selected.size > 0 ? (
@@ -145,6 +153,12 @@ export function WordLibraryView() {
           }}
         />
       )}
+
+      <ImportWordlistDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImported={() => reload(query)}
+      />
     </div>
   )
 }
