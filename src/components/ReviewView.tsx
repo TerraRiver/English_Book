@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { SpeakButton } from "@/components/SpeakButton"
 import { getDueCards, reviewCard } from "@/lib/words"
-import { DIRECTION_LABEL, Rating, STATE_LABEL, type FsrsRating } from "@/lib/fsrs"
+import { DIRECTION_LABEL, type FsrsRating, Rating } from "@/lib/fsrs"
+import { getReviewPoolSize } from "@/lib/settings"
 import type { DueCard, WordDetail } from "@/lib/types"
 
-export function ReviewView() {
-  const [queue, setQueue] = useState<DueCard[] | null>(null)
+export function ReviewView({ onReview }: { onReview?: () => void }) {
+  const [pool, setPool] = useState<DueCard[] | null>(null)
   const [revealed, setRevealed] = useState(false)
 
   const reload = useCallback(() => {
     setRevealed(false)
-    getDueCards().then(setQueue)
+    getReviewPoolSize()
+      .then((poolSize) => getDueCards(poolSize))
+      .then(setPool)
   }, [])
 
   useEffect(() => {
@@ -22,18 +25,24 @@ export function ReviewView() {
   }, [reload])
 
   async function handleRate(rating: FsrsRating) {
-    if (!queue || queue.length === 0) return
-    const [current, ...rest] = queue
+    if (!pool || pool.length === 0) return
+    const [current, ...rest] = pool
     await reviewCard(current.card, rating)
-    setQueue(rest)
     setRevealed(false)
+    onReview?.()
+
+    const poolSize = await getReviewPoolSize()
+    const need = poolSize - rest.length
+    const excludeIds = [current.card.id, ...rest.map((c) => c.card.id)]
+    const refill = need > 0 ? await getDueCards(need, excludeIds) : []
+    setPool([...rest, ...refill])
   }
 
-  if (queue === null) {
+  if (pool === null) {
     return <p className="text-sm text-muted-foreground">加载中...</p>
   }
 
-  if (queue.length === 0) {
+  if (pool.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-center">
         <p className="text-lg font-medium">今日复习已完成</p>
@@ -45,7 +54,7 @@ export function ReviewView() {
     )
   }
 
-  const { card, word } = queue[0]
+  const { card, word } = pool[0]
   const detail: WordDetail = JSON.parse(word.detail_json)
   const isReverse = card.direction === "zh_to_en"
   const contextExample = detail.examples[0]
@@ -65,11 +74,7 @@ export function ReviewView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          剩余 {queue.length} 张 · {STATE_LABEL[card.state]}
-          {card.reps > 0 && ` · 已复习 ${card.reps} 次`}
-        </p>
+      <div className="flex justify-end">
         <Badge variant="outline">{DIRECTION_LABEL[card.direction]}</Badge>
       </div>
 

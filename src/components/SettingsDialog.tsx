@@ -12,7 +12,15 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { getLlmSettings, saveLlmSettings, type LlmSettings } from "@/lib/settings"
+import { Separator } from "@/components/ui/separator"
+import {
+  DEFAULT_REVIEW_POOL_SIZE,
+  getLlmSettings,
+  getReviewPoolSize,
+  saveLlmSettings,
+  saveReviewPoolSize,
+  type LlmSettings,
+} from "@/lib/settings"
 
 export function SettingsDialog() {
   const [open, setOpen] = useState(false)
@@ -21,18 +29,24 @@ export function SettingsDialog() {
     apiKey: "",
     model: "",
   })
+  const [poolSize, setPoolSize] = useState(String(DEFAULT_REVIEW_POOL_SIZE))
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (open) {
       getLlmSettings().then(setSettings)
+      getReviewPoolSize().then((n) => setPoolSize(String(n)))
     }
   }, [open])
 
   async function handleSave() {
     setSaving(true)
     try {
-      await saveLlmSettings(settings)
+      const parsed = Math.round(Number(poolSize))
+      await Promise.all([
+        saveLlmSettings(settings),
+        saveReviewPoolSize(Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_REVIEW_POOL_SIZE),
+      ])
       setOpen(false)
     } finally {
       setSaving(false)
@@ -49,9 +63,9 @@ export function SettingsDialog() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>模型设置</DialogTitle>
+          <DialogTitle>设置</DialogTitle>
           <DialogDescription>
-            配置用于查词的大模型 API（OpenAI 兼容接口，默认 DeepSeek 官方 API）。
+            配置用于查词的大模型 API（OpenAI 兼容接口，默认 DeepSeek 官方 API），以及复习相关选项。
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3">
@@ -82,6 +96,22 @@ export function SettingsDialog() {
               onChange={(e) => setSettings({ ...settings, model: e.target.value })}
               placeholder="deepseek-v4-flash"
             />
+          </div>
+          <Separator />
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="pool-size">复习缓存张数</Label>
+            <Input
+              id="pool-size"
+              type="number"
+              min={1}
+              step={1}
+              value={poolSize}
+              onChange={(e) => setPoolSize(e.target.value)}
+              placeholder={String(DEFAULT_REVIEW_POOL_SIZE)}
+            />
+            <p className="text-xs text-muted-foreground">
+              复习时后台预先缓存的卡片数量，答完一张自动补一张，越小越贴近最新到期顺序。
+            </p>
           </div>
         </div>
         <DialogFooter>

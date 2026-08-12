@@ -39,3 +39,22 @@ export async function saveLlmSettings(settings: LlmSettings) {
     )
   }
 }
+
+export const DEFAULT_REVIEW_POOL_SIZE = 5
+
+export async function getReviewPoolSize(): Promise<number> {
+  const db = await getDb()
+  const rows = await db.select<{ value: string }[]>(
+    "SELECT value FROM settings WHERE key = 'review_pool_size'"
+  )
+  const parsed = rows[0] ? Number(rows[0].value) : NaN
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_REVIEW_POOL_SIZE
+}
+
+export async function saveReviewPoolSize(size: number): Promise<void> {
+  const db = await getDb()
+  await db.execute(
+    "INSERT INTO settings (key, value) VALUES ('review_pool_size', $1) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+    [String(size)]
+  )
+}
