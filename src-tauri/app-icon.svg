@@ -1,0 +1,26 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d17c5c"/>
+      <stop offset="1" stop-color="#a8583e"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="220" fill="url(#bgGrad)"/>
+
+  <g transform="translate(-46,18) rotate(-11 512 512)">
+    <rect x="252" y="322" width="520" height="380" rx="48" fill="#e9dac9"/>
+  </g>
+
+  <g transform="translate(20,-8) rotate(7 512 512)">
+    <rect x="252" y="322" width="520" height="380" rx="48" fill="#f6ebdd"/>
+  </g>
+
+  <g transform="rotate(-2 512 512)">
+    <rect x="252" y="322" width="520" height="380" rx="48" fill="#fbf6ee"/>
+    <path d="M 706 322 L 772 322 L 772 388 Z" fill="#e3d2bf"/>
+    <path d="M 706 322 L 772 388 L 706 388 L 706 322" fill="#fbf6ee" stroke="#e3d2bf" stroke-width="3"/>
+    <rect x="320" y="472" width="290" height="30" rx="15" fill="#bf6a4d"/>
+    <rect x="320" y="528" width="190" height="22" rx="11" fill="#ddb09a"/>
+  </g>
+</svg>
