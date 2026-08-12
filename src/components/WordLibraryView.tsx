@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { WordDetailFields } from "@/components/WordDetailFields"
 import { ImportWordlistDialog } from "@/components/ImportWordlistDialog"
+import { SpeakButton } from "@/components/SpeakButton"
 import { DIRECTION_LABEL, STATE_LABEL } from "@/lib/fsrs"
 import { deleteWords, listWordsWithCards, updateWord } from "@/lib/words"
 import type { WordDetail, WordWithCards } from "@/lib/types"
@@ -134,13 +135,14 @@ export function WordLibraryView() {
                           />
                         </td>
                         <td className="min-w-0 py-2.5 pr-3 align-top">
-                          <div className="flex items-baseline gap-2">
+                          <div className="flex items-baseline gap-1">
                             <span className="font-serif text-base">{word.term}</span>
                             {word.phonetic && (
                               <span className="text-xs text-muted-foreground">
                                 {word.phonetic}
                               </span>
                             )}
+                            <SpeakButton text={word.term} size="icon-xs" />
                           </div>
                           {detail.senses[0] && (
                             <p className="truncate text-xs text-muted-foreground">
@@ -260,11 +262,14 @@ function EditWordDialog({
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            <Input
-              className="h-9 font-serif text-lg"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-            />
+            <div className="flex items-center gap-1">
+              <Input
+                className="h-9 flex-1 font-serif text-lg"
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+              />
+              <SpeakButton text={term} />
+            </div>
           </DialogTitle>
         </DialogHeader>
         <WordDetailFields

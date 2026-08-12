@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { SpeakButton } from "@/components/SpeakButton"
 import type { WordDetail } from "@/lib/types"
 
 interface WordDetailFieldsProps {
@@ -98,11 +99,14 @@ export function WordDetailFields({
           <div className="flex flex-col gap-3">
             {detail.examples.map((ex, i) => (
               <div key={i} className="flex flex-col gap-1 text-sm">
-                <Textarea
-                  className="min-h-8 resize-none"
-                  value={ex.en}
-                  onChange={(e) => updateExample(i, { en: e.target.value })}
-                />
+                <div className="flex items-start gap-1">
+                  <Textarea
+                    className="min-h-8 flex-1 resize-none"
+                    value={ex.en}
+                    onChange={(e) => updateExample(i, { en: e.target.value })}
+                  />
+                  <SpeakButton text={ex.en} className="mt-0.5 shrink-0" />
+                </div>
                 <Textarea
                   className="min-h-8 resize-none text-muted-foreground"
                   value={ex.zh}
