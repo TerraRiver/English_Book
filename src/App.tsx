@@ -22,7 +22,7 @@ function App() {
     >
       <aside className="flex w-56 shrink-0 flex-col gap-8 border-r border-border px-5 py-8">
         <div className="flex flex-col gap-0.5 px-1">
-          <h1 className="font-serif text-2xl tracking-tight text-foreground">背单词</h1>
+          <h1 className="font-serif text-2xl tracking-tight text-foreground">词忆</h1>
           <p className="text-sm text-muted-foreground">查词 · 收录 · 记忆曲线复习</p>
         </div>
 
