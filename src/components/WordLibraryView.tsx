@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react"
-import { DownloadIcon, PencilIcon, TrashIcon } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -18,12 +18,15 @@ import { DIRECTION_LABEL, STATE_LABEL } from "@/lib/fsrs"
 import { deleteWords, listWordsWithCards, updateWord } from "@/lib/words"
 import type { WordDetail, WordWithCards } from "@/lib/types"
 
+const PAGE_SIZE = 10
+
 export function WordLibraryView() {
   const [query, setQuery] = useState("")
   const [words, setWords] = useState<WordWithCards[] | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [editing, setEditing] = useState<WordWithCards | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [page, setPage] = useState(0)
 
   const reload = useCallback((q: string) => {
     listWordsWithCards(q).then(setWords)
@@ -32,6 +35,21 @@ export function WordLibraryView() {
   useEffect(() => {
     reload(query)
   }, [query, reload])
+
+  useEffect(() => {
+    setPage(0)
+  }, [query])
+
+  const totalPages = words ? Math.max(1, Math.ceil(words.length / PAGE_SIZE)) : 1
+
+  useEffect(() => {
+    setPage((p) => Math.min(p, totalPages - 1))
+  }, [totalPages])
+
+  const pageWords = useMemo(
+    () => (words ?? []).slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE),
+    [words, page]
+  )
 
   function toggleSelect(id: number) {
     setSelected((prev) => {
@@ -60,88 +78,137 @@ export function WordLibraryView() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
+    <div className="flex h-full flex-col gap-3">
+      <div className="flex shrink-0 items-center gap-2">
         <Input
-          className="h-11 flex-1 text-base"
+          className="h-10 flex-1 text-base"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="搜索单词或释义..."
         />
-        <Button variant="outline" className="h-11" onClick={() => setImportOpen(true)}>
+        <Button variant="outline" className="h-10" onClick={() => setImportOpen(true)}>
           <DownloadIcon />
           导入词库
         </Button>
       </div>
 
-      <div className="flex h-8 items-center justify-between">
+      <div className="flex h-6 shrink-0 items-center justify-between text-sm text-muted-foreground">
         {selected.size > 0 ? (
           <>
-            <p className="text-sm text-muted-foreground">已选 {selected.size} 项</p>
-            <Button size="sm" variant="destructive" onClick={handleDeleteSelected}>
+            <span>已选 {selected.size} 项</span>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="h-6 px-2 text-xs"
+              onClick={handleDeleteSelected}
+            >
               删除所选
             </Button>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">共 {words.length} 个词条</p>
+          <span>共 {words.length} 个词条</span>
         )}
       </div>
 
-      {words.length === 0 ? (
-        <p className="py-12 text-center text-sm text-muted-foreground">
-          {query ? "没有匹配的词条" : "词库还是空的，去「添加」查一个词吧"}
-        </p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {words.map((word) => {
-            const detail: WordDetail = JSON.parse(word.detail_json)
-            return (
-              <Card key={word.id} size="sm">
-                <CardContent className="flex items-start gap-3">
-                  <Checkbox
-                    className="mt-1"
-                    checked={selected.has(word.id)}
-                    onCheckedChange={() => toggleSelect(word.id)}
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-serif text-lg">{word.term}</span>
-                      {word.phonetic && (
-                        <span className="text-xs text-muted-foreground">{word.phonetic}</span>
-                      )}
-                    </div>
-                    {detail.senses[0] && (
-                      <p className="truncate text-sm text-muted-foreground">
-                        {detail.senses[0].pos} {detail.senses[0].translation}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-1.5">
-                      {word.cards.map((c, i) => (
-                        <Badge key={i} variant="outline" className="text-xs font-normal">
-                          {DIRECTION_LABEL[c.direction]} · {STATE_LABEL[c.state]}
-                        </Badge>
-                      ))}
-                      {word.note && (
-                        <Badge variant="secondary" className="text-xs font-normal">
-                          📝 有备注
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 gap-1">
-                    <Button variant="ghost" size="icon-sm" onClick={() => setEditing(word)}>
-                      <PencilIcon />
-                    </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => handleDeleteOne(word.id)}>
-                      <TrashIcon />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
+      <Card className="min-h-0 flex-1 flex-col overflow-hidden py-0">
+        <CardContent className="flex h-full min-h-0 flex-col p-0">
+          {words.length === 0 ? (
+            <p className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground">
+              {query ? "没有匹配的词条" : "词库还是空的，去「添加」查一个词，或用「导入词库」批量收录"}
+            </p>
+          ) : (
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <table className="w-full border-collapse text-sm">
+                <tbody>
+                  {pageWords.map((word) => {
+                    const detail: WordDetail = JSON.parse(word.detail_json)
+                    return (
+                      <tr
+                        key={word.id}
+                        className="border-b border-border transition-colors last:border-0 hover:bg-muted/40"
+                      >
+                        <td className="w-10 py-2.5 pl-4 align-top">
+                          <Checkbox
+                            checked={selected.has(word.id)}
+                            onCheckedChange={() => toggleSelect(word.id)}
+                          />
+                        </td>
+                        <td className="min-w-0 py-2.5 pr-3 align-top">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-serif text-base">{word.term}</span>
+                            {word.phonetic && (
+                              <span className="text-xs text-muted-foreground">
+                                {word.phonetic}
+                              </span>
+                            )}
+                          </div>
+                          {detail.senses[0] && (
+                            <p className="truncate text-xs text-muted-foreground">
+                              {detail.senses[0].pos} {detail.senses[0].translation}
+                            </p>
+                          )}
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {word.cards.map((c, i) => (
+                              <Badge key={i} variant="outline" className="text-[11px] font-normal">
+                                {DIRECTION_LABEL[c.direction]} · {STATE_LABEL[c.state]}
+                              </Badge>
+                            ))}
+                            {word.note && (
+                              <Badge variant="secondary" className="text-[11px] font-normal">
+                                📝 备注
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="w-16 py-2.5 pr-3 align-top">
+                          <div className="flex justify-end gap-0.5">
+                            <Button variant="ghost" size="icon-sm" onClick={() => setEditing(word)}>
+                              <PencilIcon />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => handleDeleteOne(word.id)}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex h-7 shrink-0 items-center justify-center gap-3">
+        {totalPages > 1 && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              disabled={page === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {page + 1} / {totalPages}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              disabled={page === totalPages - 1}
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </>
+        )}
+      </div>
 
       {editing && (
         <EditWordDialog
