@@ -42,8 +42,9 @@ export function SettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" className="h-10 w-full justify-start gap-2 px-3 text-foreground/70">
           <SettingsIcon />
+          设置
         </Button>
       </DialogTrigger>
       <DialogContent>
