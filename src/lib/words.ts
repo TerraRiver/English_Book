@@ -111,15 +111,19 @@ export async function listWordsWithCards(query = ""): Promise<WordWithCards[]> {
   return [...byId.values()]
 }
 
-export async function getDueCards(limit = 20): Promise<DueCard[]> {
+export async function getDueCards(limit = 20, excludeIds: number[] = []): Promise<DueCard[]> {
   const db = await getDb()
+  const params: (string | number)[] = [new Date().toISOString(), limit]
+  const excludeClause = excludeIds.length
+    ? `AND c.id NOT IN (${excludeIds.map((id) => { params.push(id); return `$${params.length}` }).join(", ")})`
+    : ""
   const rows = await db.select<(CardRow & { w_id: number; term: string; phonetic: string | null; detail_json: string; note: string | null; bidirectional: 0 | 1; created_at: string })[]>(
     `SELECT c.*, w.id as w_id, w.term, w.phonetic, w.detail_json, w.note, w.bidirectional, w.created_at
      FROM cards c JOIN words w ON w.id = c.word_id
-     WHERE c.due <= $1
+     WHERE c.due <= $1 ${excludeClause}
      ORDER BY c.due ASC
      LIMIT $2`,
-    [new Date().toISOString(), limit]
+    params
   )
   return rows.map((r) => ({
     card: {
@@ -209,6 +213,23 @@ export async function reviewCard(card: CardRow, rating: FsrsRating): Promise<voi
       card.id,
     ]
   )
+  await db.execute(`INSERT INTO review_log (card_id, rating, reviewed_at) VALUES ($1, $2, $3)`, [
+    card.id,
+    rating,
+    new Date().toISOString(),
+  ])
+}
+
+export async function getTodayReviewCount(): Promise<number> {
+  const db = await getDb()
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
+  const rows = await db.select<{ count: number }[]>(
+    "SELECT COUNT(*) as count FROM review_log WHERE reviewed_at >= $1 AND reviewed_at < $2",
+    [start.toISOString(), end.toISOString()]
+  )
+  return rows[0]?.count ?? 0
 }
 
 export async function getAllTerms(): Promise<string[]> {

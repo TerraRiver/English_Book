@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { BarChart3Icon, LibraryIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import { AddWordView } from "@/components/AddWordView"
 import { ReviewView } from "@/components/ReviewView"
@@ -5,6 +6,7 @@ import { WordLibraryView } from "@/components/WordLibraryView"
 import { StatsView } from "@/components/StatsView"
 import { SettingsDialog } from "@/components/SettingsDialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getTodayReviewCount } from "@/lib/words"
 
 const NAV_ITEMS = [
   { value: "add", label: "添加", icon: PlusIcon },
@@ -14,6 +16,12 @@ const NAV_ITEMS = [
 ] as const
 
 function App() {
+  const [todayCount, setTodayCount] = useState(0)
+
+  useEffect(() => {
+    getTodayReviewCount().then(setTodayCount)
+  }, [])
+
   return (
     <Tabs
       defaultValue="add"
@@ -35,6 +43,12 @@ function App() {
             >
               <Icon className="size-4" />
               {label}
+              {value === "review" && todayCount > 0 && (
+                <span className="ml-auto flex items-baseline gap-1 text-xs text-muted-foreground">
+                  今日学习
+                  <span className="tabular-nums">{todayCount}</span>
+                </span>
+              )}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -52,7 +66,7 @@ function App() {
         </TabsContent>
         <TabsContent value="review" className="h-full overflow-y-auto px-12 py-10">
           <div className="mx-auto max-w-xl">
-            <ReviewView />
+            <ReviewView onReview={() => getTodayReviewCount().then(setTodayCount)} />
           </div>
         </TabsContent>
         <TabsContent value="library" className="flex h-full flex-col overflow-hidden px-12 py-10">
@@ -60,8 +74,8 @@ function App() {
             <WordLibraryView />
           </div>
         </TabsContent>
-        <TabsContent value="stats" className="h-full overflow-y-auto px-12 py-10">
-          <div className="mx-auto max-w-4xl">
+        <TabsContent value="stats" className="flex h-full flex-col overflow-hidden px-12 py-10">
+          <div className="mx-auto flex h-full w-full max-w-4xl flex-col">
             <StatsView />
           </div>
         </TabsContent>

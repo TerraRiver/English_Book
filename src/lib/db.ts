@@ -39,6 +39,14 @@ export function getDb() {
           value TEXT NOT NULL
         );
       `)
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS review_log (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+          rating INTEGER NOT NULL,
+          reviewed_at TEXT NOT NULL
+        );
+      `)
       return db
     })
   }
