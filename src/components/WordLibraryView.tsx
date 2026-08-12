@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -111,80 +110,72 @@ export function WordLibraryView() {
         )}
       </div>
 
-      <Card className="min-h-0 flex-1 flex-col overflow-hidden py-0">
-        <CardContent className="flex h-full min-h-0 flex-col p-0">
-          {words.length === 0 ? (
-            <p className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground">
-              {query ? "没有匹配的词条" : "词库还是空的，去「添加」查一个词，或用「导入词库」批量收录"}
-            </p>
-          ) : (
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <table className="w-full border-collapse text-sm">
-                <tbody>
-                  {pageWords.map((word) => {
-                    const detail: WordDetail = JSON.parse(word.detail_json)
-                    return (
-                      <tr
-                        key={word.id}
-                        className="border-b border-border transition-colors last:border-0 hover:bg-muted/40"
-                      >
-                        <td className="w-10 py-2.5 pl-4 align-top">
-                          <Checkbox
-                            checked={selected.has(word.id)}
-                            onCheckedChange={() => toggleSelect(word.id)}
-                          />
-                        </td>
-                        <td className="min-w-0 py-2.5 pr-3 align-top">
-                          <div className="flex items-baseline gap-1">
-                            <span className="font-serif text-base">{word.term}</span>
-                            {word.phonetic && (
-                              <span className="text-xs text-muted-foreground">
-                                {word.phonetic}
-                              </span>
-                            )}
-                            <SpeakButton text={word.term} size="icon-xs" />
-                          </div>
-                          {detail.senses[0] && (
-                            <p className="truncate text-xs text-muted-foreground">
-                              {detail.senses[0].pos} {detail.senses[0].translation}
-                            </p>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border">
+        {words.length === 0 ? (
+          <p className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground">
+            {query ? "没有匹配的词条" : "词库还是空的，去「添加」查一个词，或用「导入词库」批量收录"}
+          </p>
+        ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <table className="w-full border-collapse text-sm">
+              <tbody>
+                {pageWords.map((word) => {
+                  const detail: WordDetail = JSON.parse(word.detail_json)
+                  return (
+                    <tr
+                      key={word.id}
+                      className="border-b border-border transition-colors last:border-0 hover:bg-foreground/[0.03]"
+                    >
+                      <td className="w-10 py-2.5 pl-4 align-top">
+                        <Checkbox
+                          checked={selected.has(word.id)}
+                          onCheckedChange={() => toggleSelect(word.id)}
+                        />
+                      </td>
+                      <td className="min-w-0 py-2.5 pr-3 align-top">
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-serif text-base">{word.term}</span>
+                          {word.phonetic && (
+                            <span className="text-xs text-muted-foreground">{word.phonetic}</span>
                           )}
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {word.cards.map((c, i) => (
-                              <Badge key={i} variant="outline" className="text-[11px] font-normal">
-                                {DIRECTION_LABEL[c.direction]} · {STATE_LABEL[c.state]}
-                              </Badge>
-                            ))}
-                            {word.note && (
-                              <Badge variant="secondary" className="text-[11px] font-normal">
-                                📝 备注
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="w-16 py-2.5 pr-3 align-top">
-                          <div className="flex justify-end gap-0.5">
-                            <Button variant="ghost" size="icon-sm" onClick={() => setEditing(word)}>
-                              <PencilIcon />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              onClick={() => handleDeleteOne(word.id)}
-                            >
-                              <TrashIcon />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          <SpeakButton text={word.term} size="icon-xs" />
+                        </div>
+                        {detail.senses[0] && (
+                          <p className="truncate text-xs text-muted-foreground">
+                            {detail.senses[0].pos} {detail.senses[0].translation}
+                          </p>
+                        )}
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {word.cards.map((c, i) => (
+                            <Badge key={i} variant="outline" className="text-[11px] font-normal">
+                              {DIRECTION_LABEL[c.direction]} · {STATE_LABEL[c.state]}
+                            </Badge>
+                          ))}
+                          {word.note && (
+                            <Badge variant="secondary" className="text-[11px] font-normal">
+                              📝 备注
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="w-16 py-2.5 pr-3 align-top">
+                        <div className="flex justify-end gap-0.5">
+                          <Button variant="ghost" size="icon-sm" onClick={() => setEditing(word)}>
+                            <PencilIcon />
+                          </Button>
+                          <Button variant="ghost" size="icon-sm" onClick={() => handleDeleteOne(word.id)}>
+                            <TrashIcon />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       <div className="flex h-7 shrink-0 items-center justify-center gap-3">
         {totalPages > 1 && (
