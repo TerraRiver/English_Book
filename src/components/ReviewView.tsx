@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { SpeakButton } from "@/components/SpeakButton"
 import { getDueCards, reviewCard } from "@/lib/words"
 import { DIRECTION_LABEL, Rating, STATE_LABEL, type FsrsRating } from "@/lib/fsrs"
 import type { DueCard, WordDetail } from "@/lib/types"
@@ -78,15 +79,25 @@ export function ReviewView() {
             promptSenses
           ) : (
             <>
-              <CardTitle className="font-serif text-3xl font-normal">{word.term}</CardTitle>
+              <div className="flex items-center justify-center gap-1">
+                <CardTitle className="font-serif text-3xl font-normal">{word.term}</CardTitle>
+                <SpeakButton text={word.term} />
+              </div>
               {word.phonetic && <p className="text-sm text-muted-foreground">{word.phonetic}</p>}
             </>
           )}
 
           {!revealed && contextExample && (
-            <p className="mt-2 border-l-2 border-border pl-3 text-left text-sm text-muted-foreground italic">
-              {isReverse ? contextExample.zh : contextExample.en}
-            </p>
+            <div className="mt-2 flex items-start gap-1 border-l-2 border-border pl-3 text-left">
+              <p className="text-sm text-muted-foreground italic">
+                {isReverse ? contextExample.zh : contextExample.en}
+              </p>
+              <SpeakButton
+                text={isReverse ? contextExample.zh : contextExample.en}
+                lang={isReverse ? "zh-CN" : "en-US"}
+                className="mt-0.5 shrink-0"
+              />
+            </div>
           )}
 
           {!revealed && !isReverse && detail.variants.length > 0 && (
@@ -119,7 +130,10 @@ export function ReviewView() {
               <div className="flex flex-col gap-2">
                 {detail.examples.map((ex, i) => (
                   <div key={i} className="text-sm">
-                    <p>{ex.en}</p>
+                    <div className="flex items-start gap-1">
+                      <p className="flex-1">{ex.en}</p>
+                      <SpeakButton text={ex.en} className="mt-0.5 shrink-0" />
+                    </div>
                     <p className="text-muted-foreground">{ex.zh}</p>
                   </div>
                 ))}

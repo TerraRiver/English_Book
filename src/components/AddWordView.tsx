@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { WordDetailFields } from "@/components/WordDetailFields"
+import { SpeakButton } from "@/components/SpeakButton"
 import { lookupWord } from "@/lib/llm"
 import { getLlmSettings } from "@/lib/settings"
 import { saveWord } from "@/lib/words"
@@ -72,7 +73,10 @@ export function AddWordView() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
-              <CardTitle className="font-serif text-xl font-normal">{term.trim()}</CardTitle>
+              <div className="flex items-center gap-1">
+                <CardTitle className="font-serif text-xl font-normal">{term.trim()}</CardTitle>
+                <SpeakButton text={term.trim()} />
+              </div>
               <Button size="sm" onClick={handleSave} disabled={saving || saved}>
                 {saved ? "已保存" : saving ? "保存中..." : "保存到词库"}
               </Button>
