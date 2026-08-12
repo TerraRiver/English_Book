@@ -80,11 +80,3 @@ export const STATE_LABEL: Record<number, string> = {
   [State.Review]: "复习中",
   [State.Relearning]: "重新学习",
 }
-
-// Categorical chart color per non-New state — validated for scatter's
-// all-pairs CVD check (see index.css --chart-1/2/3).
-export const STATE_CHART_VAR: Record<number, string> = {
-  [State.Learning]: "var(--chart-1)",
-  [State.Relearning]: "var(--chart-2)",
-  [State.Review]: "var(--chart-3)",
-}
