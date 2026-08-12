@@ -9,7 +9,7 @@ export interface LlmSettings {
 const DEFAULT_SETTINGS: LlmSettings = {
   baseUrl: "https://api.deepseek.com/v1",
   apiKey: "",
-  model: "deepseek-chat",
+  model: "deepseek-v4-flash",
 }
 
 export async function getLlmSettings(): Promise<LlmSettings> {
