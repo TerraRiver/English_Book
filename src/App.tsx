@@ -29,7 +29,7 @@ function App() {
         <TabsContent value="review" className="mt-6 min-h-0 overflow-y-auto">
           <ReviewView />
         </TabsContent>
-        <TabsContent value="library" className="mt-6 min-h-0 overflow-y-auto">
+        <TabsContent value="library" className="mt-6 flex min-h-0 flex-col overflow-hidden">
           <WordLibraryView />
         </TabsContent>
         <TabsContent value="stats" className="mt-6 min-h-0 overflow-y-auto">
