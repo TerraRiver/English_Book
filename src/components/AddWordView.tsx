@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,11 +6,29 @@ import { WordDetailFields } from "@/components/WordDetailFields"
 import { SpeakButton } from "@/components/SpeakButton"
 import { lookupWord } from "@/lib/llm"
 import { getLlmSettings } from "@/lib/settings"
-import { saveWord } from "@/lib/words"
-import type { WordDetail } from "@/lib/types"
+import { getWordByTerm, listRecentWords, saveWord } from "@/lib/words"
+import type { WordDetail, WordRow } from "@/lib/types"
+
+function RecentWordRow({ word }: { word: WordRow }) {
+  const detail: WordDetail = JSON.parse(word.detail_json)
+  const firstSense = detail.senses[0]
+  return (
+    <div className="flex items-center gap-2 border-b border-border px-3 py-2 last:border-0">
+      <span className="shrink-0 font-serif text-sm">{word.term}</span>
+      {word.phonetic && <span className="shrink-0 text-xs text-muted-foreground">{word.phonetic}</span>}
+      <SpeakButton text={word.term} size="icon-xs" className="shrink-0" />
+      {firstSense && (
+        <p className="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground">
+          {firstSense.pos} {firstSense.translation}
+        </p>
+      )}
+    </div>
+  )
+}
 
 export function AddWordView() {
   const [term, setTerm] = useState("")
+  const [cardTerm, setCardTerm] = useState("")
   const [detail, setDetail] = useState<WordDetail | null>(null)
   const [note, setNote] = useState("")
   const [bidirectional, setBidirectional] = useState(false)
@@ -18,6 +36,16 @@ export function AddWordView() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [existing, setExisting] = useState(false)
+  const [recent, setRecent] = useState<WordRow[] | null>(null)
+
+  const reloadRecent = useCallback(() => {
+    listRecentWords().then(setRecent)
+  }, [])
+
+  useEffect(() => {
+    reloadRecent()
+  }, [reloadRecent])
 
   async function handleLookup() {
     const trimmed = term.trim()
@@ -28,9 +56,20 @@ export function AddWordView() {
     setNote("")
     setBidirectional(false)
     setSaved(false)
+    setExisting(false)
     try {
+      const found = await getWordByTerm(trimmed)
+      if (found) {
+        setCardTerm(found.term)
+        setDetail(JSON.parse(found.detail_json))
+        setNote(found.note ?? "")
+        setBidirectional(found.bidirectional === 1)
+        setExisting(true)
+        return
+      }
       const settings = await getLlmSettings()
       const result = await lookupWord(trimmed, settings)
+      setCardTerm(trimmed)
       setDetail(result)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -43,8 +82,9 @@ export function AddWordView() {
     if (!detail) return
     setSaving(true)
     try {
-      await saveWord(term.trim(), detail, note.trim(), bidirectional)
+      await saveWord(cardTerm, detail, note.trim(), bidirectional)
       setSaved(true)
+      reloadRecent()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -74,11 +114,14 @@ export function AddWordView() {
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
-                <CardTitle className="font-serif text-xl font-normal">{term.trim()}</CardTitle>
-                <SpeakButton text={term.trim()} />
+                <CardTitle className="font-serif text-xl font-normal">{cardTerm}</CardTitle>
+                <SpeakButton text={cardTerm} />
+                {existing && !saved && (
+                  <span className="text-xs text-muted-foreground">词库中已有，直接加载</span>
+                )}
               </div>
               <Button size="sm" onClick={handleSave} disabled={saving || saved}>
-                {saved ? "已保存" : saving ? "保存中..." : "保存到词库"}
+                {saved ? "已保存" : saving ? "保存中..." : existing ? "更新词库" : "保存到词库"}
               </Button>
             </div>
           </CardHeader>
@@ -94,6 +137,23 @@ export function AddWordView() {
           </CardContent>
         </Card>
       )}
+
+      {!detail &&
+        !loading &&
+        (recent === null ? null : recent.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <p className="px-1 text-xs font-medium text-muted-foreground">最近添加</p>
+            <div className="overflow-hidden rounded-2xl border border-border">
+              {recent.map((word) => (
+                <RecentWordRow key={word.id} word={word} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="pt-8 text-center text-sm text-muted-foreground">
+            查一个词开始收录吧，比如「break the ice」
+          </p>
+        ))}
     </div>
   )
 }

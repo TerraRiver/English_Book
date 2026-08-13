@@ -253,6 +253,17 @@ export async function insertWordIfNew(term: string, detail: WordDetail): Promise
   return true
 }
 
+export async function getWordByTerm(term: string): Promise<WordRow | null> {
+  const db = await getDb()
+  const rows = await db.select<WordRow[]>("SELECT * FROM words WHERE term = $1 COLLATE NOCASE LIMIT 1", [term])
+  return rows[0] ?? null
+}
+
+export async function listRecentWords(limit = 8): Promise<WordRow[]> {
+  const db = await getDb()
+  return db.select<WordRow[]>("SELECT * FROM words ORDER BY created_at DESC LIMIT $1", [limit])
+}
+
 export async function deleteWords(ids: number[]): Promise<void> {
   if (ids.length === 0) return
   const db = await getDb()
