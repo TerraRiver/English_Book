@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { LoaderCircleIcon } from "lucide-react"
 import { listAllCards } from "@/lib/words"
 import { State } from "@/lib/fsrs"
 import type { CardWithWord } from "@/lib/types"
@@ -68,7 +69,11 @@ export function StatsView() {
   }
 
   if (cards === null) {
-    return <p className="text-sm text-muted-foreground">加载中...</p>
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoaderCircleIcon className="size-5 animate-spin text-muted-foreground/40" />
+      </div>
+    )
   }
 
   if (cards.length === 0) {
