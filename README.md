@@ -2,6 +2,27 @@
 
 一个自用的 Windows 桌面单词学习工具，基于 Tauri 2 + React 19 + TypeScript 构建。用大模型查词、收录生词，用本地 sherpa-onnx 引擎朗读发音，并用 FSRS 记忆算法安排复习，帮助按记忆曲线巩固词汇。
 
+## 下载
+
+前往 [Releases](https://github.com/TerraRiver/VocaMind/releases) 下载最新安装包，当前最新版本 [v1.4.3](https://github.com/TerraRiver/VocaMind/releases/tag/v1.4.3)。Windows 桌面应用，NSIS 安装包，下载后直接安装运行。
+
+## 截图
+
+<table>
+  <tr>
+    <td align="center"><img src="images/添加页.png" width="420"><br>查词收录</td>
+    <td align="center"><img src="images/复习页.png" width="420"><br>记忆曲线复习</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/词库页.png" width="420"><br>词库管理</td>
+    <td align="center"><img src="images/统计页.png" width="420"><br>学习统计</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="images/内置词库.png" width="420"><br>内置词表导入</td>
+    <td></td>
+  </tr>
+</table>
+
 ## 功能
 
 - **查词收录**：输入单词或短语，调用大模型（OpenAI 兼容接口）一次性返回音标、词性、释义、变形、例句、用法说明等内容；查词结果以可编辑表单展示，保存前可手动修正 AI 的错误，也可以填写个人助记笔记。若查询的词已在词库中，会直接从本地读取，不重复调用大模型。「添加」页在空闲时会展示最近收录的词条。
@@ -47,6 +68,8 @@ sherpa-onnx 合成的发音按文本哈希缓存于：
 详见该目录下的 `THIRD_PARTY_NOTICES.txt`。
 
 ## 开发
+
+克隆仓库前需先安装 [Git LFS](https://git-lfs.com/)（`git lfs install`）：`src-tauri/resources/sherpa/` 下的语音模型与二进制文件通过 LFS 存储，普通 clone/checkout 只会拿到指针文件。
 
 ```bash
 npm install
