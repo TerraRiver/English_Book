@@ -1,0 +1,17 @@
+This directory bundles unmodified third-party binaries and model files, run
+by the app as a separate helper process (not linked into tauri-app.exe):
+
+- piper.exe, piper_phonemize.dll, onnxruntime*.dll
+  Piper TTS, rhasspy/piper, release 2023.11.14-2 (last MIT-licensed build,
+  before the project moved to OHF-Voice/piper1-gpl under GPL-3.0).
+  https://github.com/rhasspy/piper — MIT License, Copyright (c) 2022 Michael Hansen
+
+- espeak-ng.dll, espeak-ng-data/
+  espeak-ng, bundled by the above Piper release for phonemization.
+  https://github.com/espeak-ng/espeak-ng — GPL-3.0 License
+  (trimmed to English-only language data; shared core files kept as-is)
+
+- voices/en_US-ljspeech-medium.onnx(.json)
+  Piper voice model, rhasspy/piper-voices, en_US/ljspeech/medium.
+  https://huggingface.co/rhasspy/piper-voices — MIT License
+  Trained on the LJ Speech Dataset (public domain): https://keithito.com/LJ-Speech-Dataset/
