@@ -98,7 +98,7 @@ export function AddWordView() {
         <Input
           className="h-11 text-base"
           value={term}
-          onChange={(e) => setTerm(e.target.value)}
+          onChange={(e) => setTerm(e.target.value.toLowerCase())}
           onKeyDown={(e) => e.key === "Enter" && handleLookup()}
           placeholder="输入单词或短语，如 break the ice"
         />

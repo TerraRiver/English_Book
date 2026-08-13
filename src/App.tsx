@@ -5,6 +5,7 @@ import { ReviewView } from "@/components/ReviewView"
 import { WordLibraryView } from "@/components/WordLibraryView"
 import { StatsView } from "@/components/StatsView"
 import { SettingsDialog } from "@/components/SettingsDialog"
+import { AppStatusBar } from "@/components/AppStatusBar"
 import { Toaster } from "@/components/Toaster"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getTodayReviewCount } from "@/lib/words"
@@ -54,8 +55,9 @@ function App() {
           ))}
         </TabsList>
 
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-3">
           <SettingsDialog />
+          <AppStatusBar />
         </div>
       </aside>
 

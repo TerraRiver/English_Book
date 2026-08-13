@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core"
 import { notify } from "@/lib/toast"
+import { beginTts, endTts } from "@/lib/ttsStatus"
 
 export function isSpeechSupported(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window
@@ -27,15 +28,20 @@ export async function speak(text: string, lang = "en-US") {
   const trimmed = text.trim()
   if (!trimmed) return
 
-  if (lang.startsWith("en")) {
-    try {
-      await speakWithLocalTts(trimmed)
-      return
-    } catch (e) {
-      console.error("local tts failed, falling back to browser speech", e)
-      notify("本地发音引擎不可用，已切换为系统语音朗读")
+  beginTts()
+  try {
+    if (lang.startsWith("en")) {
+      try {
+        await speakWithLocalTts(trimmed)
+        return
+      } catch (e) {
+        console.error("local tts failed, falling back to browser speech", e)
+        notify("本地发音引擎不可用，已切换为系统语音朗读")
+      }
     }
-  }
 
-  speakWithBrowser(trimmed, lang)
+    speakWithBrowser(trimmed, lang)
+  } finally {
+    endTts()
+  }
 }
