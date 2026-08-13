@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,15 +14,27 @@ import {
 import { WordDetailFields } from "@/components/WordDetailFields"
 import { ImportWordlistDialog } from "@/components/ImportWordlistDialog"
 import { SpeakButton } from "@/components/SpeakButton"
+import { cn } from "@/lib/utils"
 import { DIRECTION_LABEL, STATE_LABEL } from "@/lib/fsrs"
 import { deleteWords, listWordsWithCards, updateWord } from "@/lib/words"
 import type { WordDetail, WordWithCards } from "@/lib/types"
 
-// Row/header heights are pixel-exact matches for the `h-11`/`h-9` classes
-// used below. Pagination is sized to whatever whole number of rows fits the
-// measured container, so the table never needs to scroll internally.
-const ROW_HEIGHT = 44
-const HEADER_HEIGHT = 36
+// Fixed rather than measured: chosen to comfortably fit the app's minimum
+// window height (560px) with room to spare, so the list never needs to
+// scroll or clip a row — no ResizeObserver, no pixel guesswork at runtime.
+const PAGE_SIZE = 6
+
+// Priority order term > definition > status: instead of squeezing definition
+// and status into illegible slivers as the window narrows, they're dropped
+// outright at container-width breakpoints (via CSS container queries on the
+// table area, not the viewport — the sidebar's fixed width means viewport
+// breakpoints wouldn't track the actual available space). Term and actions
+// stay in the grid at every size.
+const GRID_COLS_NARROW = "grid-cols-[1.75rem_1fr_4.25rem]"
+const GRID_COLS_MED = "@[380px]:grid-cols-[1.75rem_minmax(130px,1fr)_minmax(100px,1.4fr)_4.25rem]"
+const GRID_COLS_WIDE =
+  "@[600px]:grid-cols-[1.75rem_minmax(130px,1fr)_minmax(100px,1.4fr)_minmax(70px,0.7fr)_4.25rem]"
+const ROW_GRID_COLS = cn("grid items-center gap-3", GRID_COLS_NARROW, GRID_COLS_MED, GRID_COLS_WIDE)
 
 export function WordLibraryView() {
   const [query, setQuery] = useState("")
@@ -31,8 +43,6 @@ export function WordLibraryView() {
   const [editing, setEditing] = useState<WordWithCards | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const [page, setPage] = useState(0)
-  const [pageSize, setPageSize] = useState(10)
-  const tableWrapRef = useRef<HTMLDivElement>(null)
 
   const reload = useCallback((q: string) => {
     listWordsWithCards(q).then(setWords)
@@ -46,31 +56,19 @@ export function WordLibraryView() {
     setPage(0)
   }, [query])
 
-  useEffect(() => {
-    const el = tableWrapRef.current
-    if (!el) return
-    const compute = () => {
-      const rows = Math.floor((el.clientHeight - HEADER_HEIGHT) / ROW_HEIGHT)
-      setPageSize(Math.max(1, rows))
-    }
-    compute()
-    const observer = new ResizeObserver(compute)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
-  const totalPages = words ? Math.max(1, Math.ceil(words.length / pageSize)) : 1
+  const totalPages = words ? Math.max(1, Math.ceil(words.length / PAGE_SIZE)) : 1
 
   useEffect(() => {
     setPage((p) => Math.min(p, totalPages - 1))
   }, [totalPages])
 
   const pageWords = useMemo(
-    () => (words ?? []).slice(page * pageSize, page * pageSize + pageSize),
-    [words, page, pageSize]
+    () => (words ?? []).slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE),
+    [words, page]
   )
 
   const allPageSelected = pageWords.length > 0 && pageWords.every((w) => selected.has(w.id))
+  const anySelected = selected.size > 0
 
   function toggleSelect(id: number) {
     setSelected((prev) => {
@@ -126,7 +124,7 @@ export function WordLibraryView() {
       </div>
 
       <div className="flex h-6 shrink-0 items-center justify-between text-sm text-muted-foreground">
-        {selected.size > 0 ? (
+        {anySelected ? (
           <>
             <span>已选 {selected.size} 项</span>
             <Button
@@ -143,97 +141,37 @@ export function WordLibraryView() {
         )}
       </div>
 
-      <div
-        ref={tableWrapRef}
-        className="flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-hidden rounded-2xl border border-border"
-      >
+      <div className="@container flex min-h-0 flex-1 flex-col overflow-hidden">
         {words.length === 0 ? (
           <p className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground">
             {query ? "没有匹配的词条" : "词库还是空的，去「添加」查一个词，或用「导入词库」批量收录"}
           </p>
         ) : (
-          <table className="w-full min-w-[554px] table-fixed border-collapse text-sm">
-            <colgroup>
-              <col className="w-10" />
-              <col className="w-[180px]" />
-              <col className="w-[190px]" />
-              <col />
-              <col className="w-[72px]" />
-            </colgroup>
-            <thead>
-              <tr className="h-9 border-b border-border text-xs text-muted-foreground">
-                <th className="overflow-hidden pl-4 text-left font-normal whitespace-nowrap">
-                  <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectPage} />
-                </th>
-                <th className="overflow-hidden pr-3 text-left font-normal whitespace-nowrap">词条</th>
-                <th className="overflow-hidden pr-3 text-left font-normal whitespace-nowrap">释义</th>
-                <th className="overflow-hidden pr-3 text-left font-normal whitespace-nowrap">状态</th>
-                <th className="overflow-hidden pr-4 text-right font-normal whitespace-nowrap">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageWords.map((word) => {
-                const detail: WordDetail = JSON.parse(word.detail_json)
-                const firstSense = detail.senses[0]
-                return (
-                  <tr
-                    key={word.id}
-                    className="h-11 border-b border-border transition-colors last:border-0 hover:bg-foreground/[0.03]"
-                  >
-                    <td className="overflow-hidden pl-4 align-middle">
-                      <Checkbox
-                        checked={selected.has(word.id)}
-                        onCheckedChange={() => toggleSelect(word.id)}
-                      />
-                    </td>
-                    <td className="overflow-hidden pr-3 align-middle">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="min-w-0 truncate font-serif text-base">{word.term}</span>
-                        {word.phonetic && (
-                          <span className="shrink-0 text-xs text-muted-foreground">{word.phonetic}</span>
-                        )}
-                        <SpeakButton text={word.term} size="icon-xs" className="shrink-0" />
-                      </div>
-                    </td>
-                    <td className="overflow-hidden pr-3 align-middle text-muted-foreground">
-                      {firstSense ? (
-                        <p className="truncate">
-                          <span className="text-foreground/60">{firstSense.pos}</span>{" "}
-                          {firstSense.translation}
-                        </p>
-                      ) : (
-                        <span>—</span>
-                      )}
-                    </td>
-                    <td className="overflow-hidden pr-3 align-middle">
-                      <div className="flex items-center gap-1 overflow-hidden">
-                        {word.cards.map((c, i) => (
-                          <Badge key={i} variant="outline" className="shrink-0 text-[11px] font-normal">
-                            {DIRECTION_LABEL[c.direction]} · {STATE_LABEL[c.state]}
-                          </Badge>
-                        ))}
-                        {word.note && (
-                          <Badge variant="secondary" className="shrink-0 text-[11px] font-normal">
-                            备注
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="overflow-hidden pr-4 align-middle">
-                      <div className="flex justify-end gap-0.5">
-                        <Button variant="ghost" size="icon-sm" onClick={() => setEditing(word)}>
-                          <PencilIcon />
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleDeleteOne(word.id)}>
-                          <TrashIcon />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <>
+            <div
+              role="row"
+              className={cn(ROW_GRID_COLS, "shrink-0 border-b border-border pb-2 text-xs text-muted-foreground")}
+            >
+              <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectPage} />
+              <span>词条</span>
+              <span className="hidden @[380px]:inline">释义</span>
+              <span className="hidden @[600px]:inline">状态</span>
+              <span className="text-right">操作</span>
+            </div>
+            <div role="rowgroup" className="flex flex-col">
+              {pageWords.map((word) => (
+                <WordRow
+                  key={word.id}
+                  word={word}
+                  selected={selected.has(word.id)}
+                  showControls={anySelected}
+                  onToggleSelect={() => toggleSelect(word.id)}
+                  onEdit={() => setEditing(word)}
+                  onDelete={() => handleDeleteOne(word.id)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
 
@@ -279,6 +217,82 @@ export function WordLibraryView() {
         onOpenChange={setImportOpen}
         onImported={() => reload(query)}
       />
+    </div>
+  )
+}
+
+function WordRow({
+  word,
+  selected,
+  showControls,
+  onToggleSelect,
+  onEdit,
+  onDelete,
+}: {
+  word: WordWithCards
+  selected: boolean
+  showControls: boolean
+  onToggleSelect: () => void
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const detail: WordDetail = JSON.parse(word.detail_json)
+  const firstSense = detail.senses[0]
+  const revealClass = cn(
+    "transition-opacity",
+    showControls ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+  )
+
+  return (
+    <div
+      role="row"
+      className={cn(ROW_GRID_COLS, "group border-b border-border/70 py-2.5 last:border-0")}
+    >
+      <div className={revealClass}>
+        <Checkbox checked={selected} onCheckedChange={onToggleSelect} />
+      </div>
+
+      <div className="flex min-w-0 items-baseline gap-1.5">
+        <span className="min-w-0 truncate font-serif text-base">{word.term}</span>
+        {word.phonetic && (
+          <span className="hidden shrink-0 text-xs text-muted-foreground @[600px]:inline">
+            {word.phonetic}
+          </span>
+        )}
+        <SpeakButton text={word.term} size="icon-xs" className="hidden shrink-0 @[600px]:inline-flex" />
+      </div>
+
+      <div className="hidden min-w-0 text-sm text-muted-foreground @[380px]:block">
+        {firstSense ? (
+          <p className="truncate">
+            <span className="text-foreground/60">{firstSense.pos}</span> {firstSense.translation}
+          </p>
+        ) : (
+          <span>—</span>
+        )}
+      </div>
+
+      <div className="hidden min-w-0 items-center gap-1 overflow-hidden @[600px]:flex">
+        {word.cards.map((c, i) => (
+          <Badge key={i} variant="outline" className="shrink-0 text-[11px] font-normal">
+            {DIRECTION_LABEL[c.direction]} · {STATE_LABEL[c.state]}
+          </Badge>
+        ))}
+        {word.note && (
+          <Badge variant="secondary" className="shrink-0 text-[11px] font-normal">
+            备注
+          </Badge>
+        )}
+      </div>
+
+      <div className={cn("flex justify-end gap-0.5", revealClass)}>
+        <Button variant="ghost" size="icon-sm" onClick={onEdit}>
+          <PencilIcon />
+        </Button>
+        <Button variant="ghost" size="icon-sm" onClick={onDelete}>
+          <TrashIcon />
+        </Button>
+      </div>
     </div>
   )
 }
