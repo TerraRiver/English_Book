@@ -5,6 +5,7 @@ import { ReviewView } from "@/components/ReviewView"
 import { WordLibraryView } from "@/components/WordLibraryView"
 import { StatsView } from "@/components/StatsView"
 import { SettingsDialog } from "@/components/SettingsDialog"
+import { Toaster } from "@/components/Toaster"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getTodayReviewCount } from "@/lib/words"
 
@@ -80,6 +81,7 @@ function App() {
           </div>
         </TabsContent>
       </main>
+      <Toaster />
     </Tabs>
   )
 }

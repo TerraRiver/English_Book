@@ -1,11 +1,12 @@
 import { invoke } from "@tauri-apps/api/core"
+import { notify } from "@/lib/toast"
 
 export function isSpeechSupported(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window
 }
 
-async function speakWithPiper(text: string) {
-  const buffer = await invoke<ArrayBuffer>("speak_piper", { text })
+async function speakWithLocalTts(text: string) {
+  const buffer = await invoke<ArrayBuffer>("speak_tts", { text })
   const blob = new Blob([buffer], { type: "audio/wav" })
   const url = URL.createObjectURL(blob)
   const audio = new Audio(url)
@@ -28,10 +29,11 @@ export async function speak(text: string, lang = "en-US") {
 
   if (lang.startsWith("en")) {
     try {
-      await speakWithPiper(trimmed)
+      await speakWithLocalTts(trimmed)
       return
     } catch (e) {
-      console.error("piper tts failed, falling back to browser speech", e)
+      console.error("local tts failed, falling back to browser speech", e)
+      notify("本地发音引擎不可用，已切换为系统语音朗读")
     }
   }
 

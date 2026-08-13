@@ -1,0 +1,20 @@
+This directory bundles unmodified third-party binaries and model files, run
+by the app as a separate helper process (not linked into tauri-app.exe):
+
+- sherpa-onnx-offline-tts.exe, onnxruntime.dll, onnxruntime_providers_shared.dll
+  sherpa-onnx, k2-fsa/sherpa-onnx, release v1.13.5.
+  https://github.com/k2-fsa/sherpa-onnx — Apache License 2.0
+  (statically links espeak-ng for phonemization; kept isolated in this
+  subprocess, like the Piper build it replaces, so espeak-ng's GPL-3 code
+  never becomes part of the compiled app)
+
+- espeak-ng-data/
+  espeak-ng, bundled by the above sherpa-onnx release for phonemization.
+  https://github.com/espeak-ng/espeak-ng — GPL-3.0 License
+  (trimmed to English-only dictionary data; shared core files kept as-is)
+
+- voices/en_US-ljspeech-medium.onnx, voices/tokens.txt
+  Piper voice model, rhasspy/piper-voices, en_US/ljspeech/medium, repackaged
+  for sherpa-onnx's VITS backend by k2-fsa/sherpa-onnx.
+  https://huggingface.co/rhasspy/piper-voices — MIT License
+  Trained on the LJ Speech Dataset (public domain): https://keithito.com/LJ-Speech-Dataset/
