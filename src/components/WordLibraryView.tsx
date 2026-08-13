@@ -145,30 +145,30 @@ export function WordLibraryView() {
 
       <div
         ref={tableWrapRef}
-        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border"
+        className="flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-hidden rounded-2xl border border-border"
       >
         {words.length === 0 ? (
           <p className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground">
             {query ? "没有匹配的词条" : "词库还是空的，去「添加」查一个词，或用「导入词库」批量收录"}
           </p>
         ) : (
-          <table className="w-full table-fixed border-collapse text-sm">
+          <table className="w-full min-w-[554px] table-fixed border-collapse text-sm">
             <colgroup>
               <col className="w-10" />
-              <col className="w-[32%]" />
+              <col className="w-[180px]" />
+              <col className="w-[190px]" />
               <col />
-              <col className="w-[200px]" />
               <col className="w-[72px]" />
             </colgroup>
             <thead>
               <tr className="h-9 border-b border-border text-xs text-muted-foreground">
-                <th className="pl-4 text-left font-normal">
+                <th className="overflow-hidden pl-4 text-left font-normal whitespace-nowrap">
                   <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectPage} />
                 </th>
-                <th className="pr-3 text-left font-normal">词条</th>
-                <th className="pr-3 text-left font-normal">释义</th>
-                <th className="pr-3 text-left font-normal">状态</th>
-                <th className="pr-4 text-right font-normal">操作</th>
+                <th className="overflow-hidden pr-3 text-left font-normal whitespace-nowrap">词条</th>
+                <th className="overflow-hidden pr-3 text-left font-normal whitespace-nowrap">释义</th>
+                <th className="overflow-hidden pr-3 text-left font-normal whitespace-nowrap">状态</th>
+                <th className="overflow-hidden pr-4 text-right font-normal whitespace-nowrap">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -180,13 +180,13 @@ export function WordLibraryView() {
                     key={word.id}
                     className="h-11 border-b border-border transition-colors last:border-0 hover:bg-foreground/[0.03]"
                   >
-                    <td className="pl-4 align-middle">
+                    <td className="overflow-hidden pl-4 align-middle">
                       <Checkbox
                         checked={selected.has(word.id)}
                         onCheckedChange={() => toggleSelect(word.id)}
                       />
                     </td>
-                    <td className="pr-3 align-middle">
+                    <td className="overflow-hidden pr-3 align-middle">
                       <div className="flex items-baseline gap-1.5">
                         <span className="min-w-0 truncate font-serif text-base">{word.term}</span>
                         {word.phonetic && (
@@ -195,7 +195,7 @@ export function WordLibraryView() {
                         <SpeakButton text={word.term} size="icon-xs" className="shrink-0" />
                       </div>
                     </td>
-                    <td className="pr-3 align-middle text-muted-foreground">
+                    <td className="overflow-hidden pr-3 align-middle text-muted-foreground">
                       {firstSense ? (
                         <p className="truncate">
                           <span className="text-foreground/60">{firstSense.pos}</span>{" "}
@@ -205,7 +205,7 @@ export function WordLibraryView() {
                         <span>—</span>
                       )}
                     </td>
-                    <td className="pr-3 align-middle">
+                    <td className="overflow-hidden pr-3 align-middle">
                       <div className="flex items-center gap-1 overflow-hidden">
                         {word.cards.map((c, i) => (
                           <Badge key={i} variant="outline" className="shrink-0 text-[11px] font-normal">
@@ -219,7 +219,7 @@ export function WordLibraryView() {
                         )}
                       </div>
                     </td>
-                    <td className="pr-4 align-middle">
+                    <td className="overflow-hidden pr-4 align-middle">
                       <div className="flex justify-end gap-0.5">
                         <Button variant="ghost" size="icon-sm" onClick={() => setEditing(word)}>
                           <PencilIcon />
