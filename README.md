@@ -67,6 +67,8 @@ sherpa-onnx 合成的发音按文本哈希缓存于：
 
 详见该目录下的 `THIRD_PARTY_NOTICES.txt`。
 
+`src/data/wordlists/` 下内置的初中、高中、四级、六级、考研、托福、SAT 词表数据来自 [KyleBing/english-vocabulary](https://github.com/KyleBing/english-vocabulary)。
+
 ## 开发
 
 克隆仓库前需先安装 [Git LFS](https://git-lfs.com/)（`git lfs install`）：`src-tauri/resources/sherpa/` 下的语音模型与二进制文件通过 LFS 存储，普通 clone/checkout 只会拿到指针文件。
