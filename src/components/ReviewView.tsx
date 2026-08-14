@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import { SpeakButton } from "@/components/SpeakButton"
-import { getDueCards, reviewCard } from "@/lib/words"
+import { getDueCards, reviewCard, setWordBidirectional } from "@/lib/words"
 import { DIRECTION_LABEL, type FsrsRating, Rating } from "@/lib/fsrs"
 import { getReviewPoolSize } from "@/lib/settings"
 import type { DueCard, WordDetail } from "@/lib/types"
@@ -36,6 +38,26 @@ export function ReviewView({ onReview }: { onReview?: () => void }) {
     const excludeIds = [current.card.id, ...rest.map((c) => c.card.id)]
     const refill = need > 0 ? await getDueCards(need, excludeIds) : []
     setPool([...rest, ...refill])
+  }
+
+  async function handleBidirectionalToggle(checked: boolean) {
+    if (!pool || pool.length === 0) return
+    const wordId = pool[0].word.id
+    const currentCardRemoved = !checked && pool[0].card.direction === "zh_to_en"
+    await setWordBidirectional(wordId, checked)
+    setPool((prev) => {
+      if (!prev) return prev
+      let next = prev.map((item) =>
+        item.word.id === wordId
+          ? { ...item, word: { ...item.word, bidirectional: (checked ? 1 : 0) as 0 | 1 } }
+          : item
+      )
+      if (!checked) {
+        next = next.filter((item) => !(item.word.id === wordId && item.card.direction === "zh_to_en"))
+      }
+      return next
+    })
+    if (currentCardRemoved) setRevealed(false)
   }
 
   if (pool === null) {
@@ -74,7 +96,17 @@ export function ReviewView({ onReview }: { onReview?: () => void }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="review-bidirectional"
+            checked={word.bidirectional === 1}
+            onCheckedChange={(v) => handleBidirectionalToggle(v === true)}
+          />
+          <Label htmlFor="review-bidirectional" className="text-sm font-normal text-muted-foreground">
+            双向背诵
+          </Label>
+        </div>
         <Badge variant="outline">{DIRECTION_LABEL[card.direction]}</Badge>
       </div>
 

@@ -59,6 +59,12 @@ export async function saveWord(
   await syncCards(rows[0].id, bidirectional)
 }
 
+export async function setWordBidirectional(wordId: number, bidirectional: boolean): Promise<void> {
+  const db = await getDb()
+  await db.execute("UPDATE words SET bidirectional = $1 WHERE id = $2", [bidirectional ? 1 : 0, wordId])
+  await syncCards(wordId, bidirectional)
+}
+
 export async function updateWord(
   id: number,
   term: string,
