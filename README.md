@@ -4,7 +4,7 @@
 
 ## 下载
 
-前往 [Releases](https://github.com/TerraRiver/VocaMind/releases) 下载最新安装包，当前最新版本 [v1.4.3](https://github.com/TerraRiver/VocaMind/releases/tag/v1.4.3)。Windows 桌面应用，NSIS 安装包，下载后直接安装运行。
+前往 [Releases](https://github.com/TerraRiver/VocaMind/releases) 下载最新安装包，当前最新版本 [v1.4.4](https://github.com/TerraRiver/VocaMind/releases/tag/v1.4.4)。Windows 桌面应用，NSIS 安装包，下载后直接安装运行。
 
 ## 截图
 
